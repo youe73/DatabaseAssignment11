@@ -1,0 +1,606 @@
+# Database - Assignment 11 (Object relational mapping) 
+
+### Exercise 1
+
+
+```python
+import mysql.connector
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  passwd="",
+  database="ormDB"
+)
+
+mycursor = mydb.cursor()
+
+# Need only to execute once or add the drop database if exists...
+#mycursor.execute("CREATE DATABASE ormDB")
+```
+
+
+```python
+data = {"schemaName": "MicroShop",
+  "entities": [
+  	{"Customer": {
+  		"name": "String",
+  		"orders" :"*Order"}},
+  	{"Orders" :{
+  		"date": "String",
+  		"total": "Number",
+  		"customer": "Customer",
+  		"line": "*OrderLine" }},
+  	{"OrderLine" : {
+  		"orders": "Order",
+  		"product": "Product",
+  		"count": "Number",
+  		"total": "Number" }},
+  	{"Product" : {
+  		"name": "String",
+  		"price" :"Number"}}
+  ]
+}
+```
+
+
+```python
+data
+```
+
+
+
+
+    {'schemaName': 'MicroShop',
+     'entities': [{'Customer': {'name': 'String', 'orders': '*Order'}},
+      {'Orders': {'date': 'String',
+        'total': 'Number',
+        'customer': 'Customer',
+        'line': '*OrderLine'}},
+      {'OrderLine': {'orders': 'Order',
+        'product': 'Product',
+        'count': 'Number',
+        'total': 'Number'}},
+      {'Product': {'name': 'String', 'price': 'Number'}}]}
+
+
+
+
+```python
+print(type(data))
+```
+
+    <class 'dict'>
+    
+
+
+```python
+class Customer:
+    cslname=""
+    name =""
+    orders = []
+    
+    def __init__(self, cslname,name, orders):
+        self.cslname = cslname
+        self.name = name
+        self.orders = orders
+
+   
+    
+    
+class Order:
+    cslname=""
+    date =""
+    total=""
+    customer =""
+    lines = []
+    
+    def __init__(self, cslname, date, total, customer, lines):
+        self.cslname = cslname
+        self.date = date
+        self.total = total
+        self.customer = customer
+        self.lines = lines
+        
+        
+
+class OrderLine:
+    cslname=""    
+    order =""
+    product =""
+    count =""
+    total =""
+    
+    def __init__(self, cslname, order, product,count, total):
+        self.cslname = cslname
+        self.order = order
+        self.product = product
+        self.count = count
+        self.total = total
+        
+
+
+
+class Product:
+    cslname=""
+    name = ""
+    price =""
+    
+    def __init__(self, cslname, name, price):
+        self.cslname = cslname
+        self.name = name
+        self.price = price
+    
+    
+ 
+
+    
+```
+
+
+```python
+def tableName(data):
+    convertData(data) 
+    tablename = data['schemaName']
+    return tablename
+ 
+
+    
+def convertData(ent):
+    arr=[]
+    entity =ent['entities']
+    
+    customerData = entity[0]    
+    h1 = getheadername(customerData)
+    cells = customerData.get('Customer')
+    customerclass(h1, cells)
+             
+            
+    orderData = entity[1]    
+    h2 = getheadername(orderData)
+    cells2 = orderData.get('Orders')
+    orderclass(h2, cells2)
+   
+       
+    orderlineData = entity[2]   
+    h3 = getheadername(orderlineData)
+    cells3 = orderlineData.get('OrderLine')
+    orderlineclass(h3, cells3)
+    
+         
+    productData = entity[3] 
+    h4 = getheadername(productData)
+    cells4 = productData.get('Product')
+    prodcuctclass(h4, cells4)
+    
+    
+    return "Done"
+
+
+def getheadername(entity):
+    entity = str(entity)
+    entites = entity.split(':')
+    Dataheader = entites[0].replace('{', ' ')
+    return Dataheader
+
+
+
+#################################################
+
+def customerclass(h, i):
+    arr = []
+    arr2 = []
+    for z in i:
+        unit = z, i.get(z)
+        arr.append(z)
+        arr2.append(i.get(z))
+           
+    name = arr[0] , arr2[0]
+    order = arr[1], arr2[1]
+    
+    customerclass = Customer(h, name, order)
+    sql = makesqltable(h,arr,arr2)
+    #write_tofile(sql)
+    
+
+def orderclass(h, i):
+    print(h,i)
+    arr = []
+    arr2 = []
+    for z in i:
+        unit = z, i.get(z)
+        arr.append(z)
+        arr2.append(i.get(z))
+           
+    date = arr[0] , arr2[0]
+    total = arr[1], arr2[1]
+    customer = arr[2], arr2[2]
+    lines = arr[3], arr2[3]
+    
+    orderclass = Order(h, date, total, customer, lines)
+    sql = makesqltable(h,arr,arr2)
+    #write_tofile(sql)
+
+    
+def orderlineclass(h, i):
+    arr = []
+    arr2 = []
+    for z in i:
+        unit = z, i.get(z)
+        arr.append(z)
+        arr2.append(i.get(z))
+           
+    order = arr[0] , arr2[0]
+    product = arr[1], arr2[1]
+    count = arr[2], arr2[2]
+    total = arr[3], arr2[3]
+    
+    
+    orderlineclass = OrderLine(h, order, product, count, total)
+    sql = makesqltable(h,arr,arr2)
+    #write_tofile(sql)
+
+        
+
+def prodcuctclass(h, i):
+    arr = []
+    arr2 = []
+    for z in i:
+        unit = z, i.get(z)
+        arr.append(z)
+        arr2.append(i.get(z))
+           
+    name = arr[0] , arr2[0]
+    price = arr[1], arr2[1]
+    
+    
+    productclass = Product(h, name, price)
+    sql = makesqltable(h,arr,arr2)
+    #write_tofile(sql)
+    
+    
+def ConvertString(string): 
+    li = list(string.split(" ")) 
+    return li
+
+
+
+def makesqltable(h,arr,arr2):
+    h = h.replace('\'', ' ')
+    sql = "DROP TABLE IF EXISTS"+h+";\n"
+    sql += "CREATE TABLE" +h+ "(ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+    count = 0
+    comma="," 
+    while(count<len(arr)):
+          
+        sql +=  arr[count] + " "+ sqltypes(arr2[count]) 
+        sql += comma
+        count+=1
+    
+    
+    sql=sql.rstrip(',')
+    sql+=");"
+    return sql
+
+
+def sqltypes(types):
+       
+    if(types=="String" or types=="Date"):
+        result = "VARCHAR(255)"
+        return result
+    
+    elif(types=="Number" or types=="Order" or types=="Customer" or types=="Product"):
+        result ="INT"
+        return result    
+    
+    elif(types=="Number" or types=="*Order" or types=="*OrderLine"):
+        result ="INT"
+        return result           
+        
+        DOUBLE  
+    
+
+def write_tofile(sql):
+    file2 = open("sqlorm.txt","a+")    
+    file2.write(f"{str(sql)}\n")
+    
+
+def queryfromfile():
+    
+    with open('sqlorm.txt', 'r') as reader:
+        line = reader.readline()
+        while line != '': 
+            print(line, end='')
+            # only need to create the below statement once....(mycursor.execute(line))
+            #mycursor.execute(line)
+            line = reader.readline()
+            
+            
+```
+
+
+```python
+tableName(data)
+```
+
+     'Orders' {'date': 'String', 'total': 'Number', 'customer': 'Customer', 'line': '*OrderLine'}
+    
+
+
+
+
+    'MicroShop'
+
+
+
+
+```python
+# Need to only run this once 
+queryfromfile()
+```
+
+    DROP TABLE IF EXISTS  Customer ;
+    CREATE TABLE  Customer (ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255),orders INT);
+    DROP TABLE IF EXISTS  Orders ;
+    CREATE TABLE  Orders (ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, date VARCHAR(255),total INT,customer INT,line INT);
+    DROP TABLE IF EXISTS  OrderLine ;
+    CREATE TABLE  OrderLine (ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, orders INT,product INT,count INT,total INT);
+    DROP TABLE IF EXISTS  Product ;
+    CREATE TABLE  Product (ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255),price INT);
+    
+
+
+```python
+l = [ ("lenovo",5000),
+      ("HP",7500),
+      ("Dell",4500),
+      ("Mac",9500),
+      ("Chromebooks",4000)  
+    ]
+
+def productinsert(val):
+    sql = "INSERT INTO Product (name, price) VALUES (%s, %s)"
+    mycursor = mydb.cursor()
+    mycursor.executemany(sql, val)
+    mydb.commit()
+    print(mycursor.rowcount, "was inserted.")
+    
+# only need to execute once
+#productinsert(l)
+```
+
+
+```python
+
+
+    
+def datalayer(customername,productid,quantity,date):
+   
+    mycursor = mydb.cursor()
+ 
+    sql_select = "SELECT ID FROM Orders ORDER BY ID DESC LIMIT 1"
+    mycursor.execute(sql_select)
+    orderid = mycursor.fetchall()
+    
+    if(len(orderid) == 0):
+        orderid = 1
+        
+    else:
+        for x in orderid:
+            
+            orderid = convertToInt(x)
+            orderid+=1
+            
+           
+    sql_getcustid = "SELECT ID FROM Customer ORDER BY ID DESC LIMIT 1"
+    mycursor.execute(sql_getcustid)
+    cid = mycursor.fetchall()
+    
+    if(len(cid) == 0):
+        cid = 1
+    else:
+        for y in cid:
+            
+            cid = convertToInt(y)
+            cid+=1
+            
+    sql = "INSERT INTO Customer (name, orders) VALUES (%s, %s)"
+    value = [(customername, orderid)]
+    mycursor = mydb.cursor()
+    mycursor.executemany(sql, value)
+    
+            
+      
+    sql_getlineid = "SELECT ID FROM OrderLine ORDER BY ID DESC LIMIT 1"
+    mycursor.execute(sql_getlineid)
+    lineid = mycursor.fetchall()
+    
+    if(len(lineid) == 0):
+        lineid = 1
+    else:
+        for z in lineid:
+            
+            lineid = convertToInt(z)
+            lineid+=1
+            
+    
+       
+    sql_getpriceid = "SELECT price FROM Product WHERE ID=%s"
+    id = (productid,)
+    mycursor.execute(sql_getpriceid,id)
+    price = mycursor.fetchall()
+    for z in price:
+        price = convertToInt(z)
+            
+    
+    total = price*quantity
+    
+    
+    sql2 = "INSERT INTO Orders (date, total, customer, line) VALUES (%s, %s,%s, %s)"
+   
+    #print(date, total,cid,lineid)
+    
+    val2 = [(date, total,cid,lineid)]
+    mycursor.executemany(sql2, val2)
+    
+    
+    sql3 = "INSERT INTO OrderLine (orders, product, count, total) VALUES (%s, %s,%s, %s)"
+
+    #print(orderid, productid,quantity,total)
+    val3 = [(orderid, productid,quantity,total)]
+    mycursor.executemany(sql3, val3)
+    
+    
+    mydb.commit()
+
+    print(mycursor.rowcount, "Rows inserted")
+    
+
+def convertToInt(list):     
+    res = int("".join(map(str, list)))       
+    return res 
+  
+```
+
+
+```python
+# mock date/string   
+
+datalayer("John",5,2,"2019-03-09")
+datalayer("Joe",2,5,"2019-03-12")
+datalayer("Eve",2,10,"2019-03-20")
+datalayer("Luke",3,20,"2019-03-29")
+datalayer("Solo",5,15,"2019-04-10")
+datalayer("Leia",4,5,"2019-04-15")
+datalayer("Chewie",5,3,"2019-04-16")
+datalayer("Jabba",1,8,"2019-04-28")
+datalayer("Vader",3,7,"2019-05-01")
+
+```
+
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    1 Hopefully inserterd right
+    
+
+### The queryfromfile method executes a chain of functions from the described methods above, and takes the input data and instanitates the necessary classes (Customer, Orders, Orderlines, Product) which are associated with the data. The first part perform the data convertion to mysql statements and stores them in af file called sqlorm.txt. Next it reads from the file and insert them into mysql database named ormDB. 
+
+No ORM without a query language. We will make a very simple one with the following syntax:
+
+Customer return a collection of all Customers
+Customer.name return a collection of all names of Customers
+(Customer|name='Joe') return a collection of all Customers named Joe.
+(Customer|name='Joe').Orders return a collection of all Joe's orders
+(Customer|name='Joe').Orders.OrderLine.Product return a collection of all products in all of Joe's orders
+(Orders|total > 200).Customer.name return a list of all Customers with an order above 200.
+I suggest you get the queries to work in the order specified above. Getting the first two to work is necessary.
+
+The condition in (Customer|name='Joe') can be really hard to do if you want to do it 100% right. I therefore suggest to merely assume that the part from | to the matching ) is copied into a sql where clause directly.
+
+Examples of how the query language could be used in Python could be:
+
+names = myQuery("Product.name")
+for name in names:
+	print(name)
+or
+
+joesOrders = myQuery("(Customer|name='Joe').Orders")
+for order in joesOrders:
+	print( order.date )
+
+
+### Excerice 2
+
+
+```python
+def selectAll(table):
+    mycursor = mydb.cursor()
+    sqlstr = "SELECT * FROM " + table +";"
+    mycursor.execute(sqlstr)
+    myresult = mycursor.fetchall()
+    print(myresult)
+    
+```
+
+
+```python
+selectAll("customer")
+```
+
+    [(1, 'John', 1), (2, 'Joe', 2), (3, 'Eve', 3), (4, 'Luke', 4), (5, 'Solo', 5), (6, 'Leia', 6), (7, 'Chewie', 7), (8, 'Jabba', 8), (9, 'Vader', 9)]
+    
+
+
+```python
+def selectByAttribute(table, att):
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT " + att + " FROM " + table)
+    myresult = mycursor.fetchall()
+    print(myresult)
+```
+
+
+```python
+selectByAttribute("customer", "name")
+```
+
+    [('John',), ('Joe',), ('Eve',), ('Luke',), ('Solo',), ('Leia',), ('Chewie',), ('Jabba',), ('Vader',)]
+    
+
+
+```python
+def selectByName(table, thename, orders):
+   
+    mycursor = mydb.cursor()
+    sql = "SELECT * FROM " + table + " where name = %s"
+    tname = (thename,)
+    mycursor.execute(sql,tname)
+   
+    myresult = mycursor.fetchall()
+    print(myresult)
+```
+
+
+```python
+cust = Customer("customer", "Joe", 2)
+selectByName(cust.cslname , cust.name, cust.orders)
+```
+
+    [(2, 'Joe', 2)]
+    
+
+
+```python
+datalayer("Joe",3,9,"2019-05-06")
+```
+
+    1 Rows inserted
+    
+
+
+```python
+def selectOrderByName(table, thename, orders):
+   
+    mycursor = mydb.cursor()
+    sql = "SELECT orders FROM " + table + " where name = %s" 
+    
+    mycursor.execute(sql,(thename,))
+   
+    myresult = mycursor.fetchall()
+    print(myresult)
+
+```
+
+
+```python
+selectOrderByName(cust.cslname , cust.name, cust.orders)
+```
+
+    [(2,), (10,)]
+    
